@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Financial Log Analyzer</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Log Analysis Tool</h1>
+    <form method="post" action="/analyze">
+        <textarea name="log" placeholder="Enter your financial log..." rows="6" cols="60">{{ log or "" }}</textarea><br><br>
+        <button type="submit">Analyze</button>
+    </form>
+
+    {% if analysis %}
+        <h3>Analysis:</h3>
+        <p>{{ analysis }}</p>
+        <h3>Fix:</h3>
+        <p>{{ fix }}</p>
+    {% endif %}
+</body>
+</html>
