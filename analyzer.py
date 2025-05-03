@@ -1,8 +1,9 @@
 import os
 import requests
+import json  # ✅ Needed for parsing the model's JSON string
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-GROQ_MODEL = "llama3-8b-8192"  # Or "mixtral-8x7b-32768"
+GROQ_MODEL = "llama3-8b-8192"
 
 def analyze_log_with_model(log: str):
     headers = {
@@ -37,7 +38,7 @@ Respond like:
     if response.status_code == 200:
         try:
             raw_output = response.json()["choices"][0]["message"]["content"]
-            return raw_output
+            return json.loads(raw_output)  # ✅ Convert JSON string to Python dict
         except Exception as e:
             return {"analysis": "Could not parse model response.", "fix": str(e)}
     else:
