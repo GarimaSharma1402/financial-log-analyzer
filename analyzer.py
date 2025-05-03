@@ -1,43 +1,44 @@
+import os
 import requests
 
-GROQ_API_KEY = "groq_api_key"  # Set in Render as an env variable
-GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+GROQ_MODEL = "llama3-8b-8192"  # Or "mixtral-8x7b-32768"
 
-def analyze_log(log: str):
+def analyze_log_with_model(log: str):
     headers = {
         "Authorization": f"Bearer {GROQ_API_KEY}",
         "Content-Type": "application/json"
     }
 
     prompt = f"""
-You are a financial log analysis assistant.
+You are a helpful assistant specialized in financial systems error analysis.
+
+Analyze the following financial log and respond in JSON format with "analysis" and "fix".
 
 Log: {log}
 
-Provide:
-1. A brief analysis of the log in simple English.
-2. A suggested fix or explanation for the issue.
+Respond like:
+{{
+  "analysis": "...",
+  "fix": "..."
+}}
 """
 
     payload = {
-        "model": "mixtral-8x7b-32768",
-        "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.5
+        "model": GROQ_MODEL,
+        "messages": [
+            {"role": "system", "content": "You are a financial systems expert."},
+            {"role": "user", "content": prompt}
+        ]
     }
 
-    try:
-        response = requests.post(GROQ_API_URL, headers=headers, json=payload)
-        data = response.json()
-        content = data['choices'][0]['message']['content']
+    response = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=payload)
 
-        analysis, fix = content.split("Fix:", 1) if "Fix:" in content else (content, "No fix provided.")
-
-        return {
-            "analysis": analysis.strip(),
-            "fix": fix.strip()
-        }
-    except Exception as e:
-        return {
-            "analysis": "Error analyzing log.",
-            "fix": str(e)
-        }
+    if response.status_code == 200:
+        try:
+            raw_output = response.json()["choices"][0]["message"]["content"]
+            return raw_output
+        except Exception as e:
+            return {"analysis": "Could not parse model response.", "fix": str(e)}
+    else:
+        return {"analysis": "API call failed.", "fix": f"Status: {response.status_code}, Error: {response.text}"}
