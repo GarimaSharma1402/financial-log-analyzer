@@ -3,20 +3,32 @@
 <head>
     <title>Financial Log Analyzer</title>
     <link rel="stylesheet" href="/static/style.css">
+    <script>
+        function toggleButton() {
+            const textarea = document.getElementById("log");
+            const button = document.getElementById("analyzeBtn");
+            button.disabled = textarea.value.trim() === "";
+        }
+
+        window.onload = function() {
+            toggleButton();  // Initial state
+            document.getElementById("log").addEventListener("input", toggleButton);
+        };
+    </script>
 </head>
 <body>
     <h1>Financial Log Analysis Tool</h1>
     <p>We will soon extend to take in .log/.txt/.zip files as input. But for now, please copy paste log text in space provided.</p>
     <form method="post" action="/analyze">
-        <textarea name="log" placeholder="Enter log text. For example - Swap leg must have a swap parent..." rows="6" cols="60">{{ log or "" }}</textarea><br><br>
-        <button type="submit">Analyze</button>
+        <textarea id="log" name="log" placeholder="Enter log text. For example - Swap leg must have a swap parent..." rows="6" cols="60">{{ log or "" }}</textarea><br><br>
+        <button type="submit" id="analyzeBtn">Analyze</button>
     </form>
 
     {% if analysis %}
         <h3>Analysis:</h3>
-        <p>{{ analysis }}</p>
+        <p>{{ analysis | e }}</p>
         <h3>Fix:</h3>
-        <p>{{ fix }}</p>
+        <p>{{ fix | e }}</p>
     {% endif %}
 </body>
 </html>
